@@ -25,7 +25,20 @@ jobs:
 
     - name: dotnet publish
       run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
-
+      
+    - name: dotnet Update Migrations
+      run: |
+        rm Migrations -r
+        dotnet ef migrations add InitialCreate
+        $env:ConnectionStrings:MyDbConnection="Server=tcp:jaceprotodb.database.windows.net,1433;Database=coreDB;User ID=JaceProtoDBUser;Password='J@ceProtoDBUserPassw0rd!';Encrypt=true;Connection Timeout=30;"
+        dotnet ef database update
+    
+    - name: Update Azure ConnectionString
+      uses: Azure/cli@v1.0.0
+      with:
+        # Specify the script here
+        inlineScript: az webapp config connection-string set --resource-group Test --name jaceproto --settings MyDbConnection="Server=tcp:jaceprotodb.database.windows.net,1433;Database=coreDB;User ID=JaceProtoDBUser;Password='J@ceProtoDBUserPassw0rd!';Encrypt=true;Connection Timeout=30;" --connection-string-type SQLAzure
+    
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
